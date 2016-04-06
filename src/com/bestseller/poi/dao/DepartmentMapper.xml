@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bestseller.poi.dao.DepartmentMapper">
+  	<select id="getById" parameterType="Integer" resultType="Department">
+  		select * from oa_department where department_id=#{id}
+  	</select>
+  	
+  	<select id="getByName" resultType="Department" parameterType="String">
+  		select * from oa_department where department_name=#{departmentName}
+  	</select>
+  	<!-- <resultMap type="Department" id="departmentResult">
+  		<id property="departmentId" column="department_id"/>
+  		<result property="departmentName" column="department_name"/>
+  		<association property="manager" column="manager_id"
+  		select=""></association>
+  		<collection property="employees" column="department_id" ofType="Employee" 
+  		select=""></collection>
+  	</resultMap> -->
+  	
+  	
+</mapper>

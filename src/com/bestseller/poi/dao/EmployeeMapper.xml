@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bestseller.poi.dao.EmployeeMapper">
+  	<select id="getAll" resultMap="employeeRole">
+  		select e.employee_id,e.login_name,e.employee_name,e.gender,e.enabled,e.department_id,email,
+  		r.role_id,r.role_name 
+  		from oa_employee e
+  		left join oa_employee_role er
+  		on e.employee_id=er.employee_id
+  		left join oa_role r
+  		on r.role_id=er.role_id
+  	</select>
+  	<resultMap type="Employee" id="employees">
+  		<id property="employeeId" column="employee_id"/>
+  		<result property="loginName" column="login_name"/>
+  		<result property="employeeName" column="employee_name"/>
+  		<result property="gender" column="gender"/>
+  		<result property="enabled" column="enabled"/>
+  		<result property="email" column="email"/>
+  		<association property="department" column="department_id" 
+ 		select="com.bestseller.poi.dao.DepartmentMapper.getById"></association>
+  	</resultMap>
+  	
+  	<resultMap type="Employee" id="employeeRole" extends="employees">
+  		<collection property="roles" ofType="Role">
+  			<id property="roleId" column="role_id"/>
+  			<result property="roleName" column="role_name"/>
+  		</collection>
+  	</resultMap>
+  	
+  	<select id="getBy" resultMap="employees" parameterType="String">
+  		select employee_id,login_name,employee_name,gender,enabled,email,department_id
+  		from oa_employee
+  		where login_name=#{trim}
+  	</select>
+  	
+  	
+  	<insert id ="batchSave" parameterType="java.util.List" >
+              <selectKey resultType ="java.lang.Integer" keyProperty= "employeeId"
+                   order= "AFTER">
+                  SELECT LAST_INSERT_ID()
+              </selectKey >
+             insert into oa_employee
+             (employee_id, login_name, employee_name, gender,enabled,email,department_id)
+             values
+             <foreach collection ="list" item="employees" index= "index" separator =",">
+                 (
+                 #{employees.employeeId},
+                 #{employees.loginName},
+                 #{employees.employeeName},
+                 #{employees.gender},
+                 #{employees.enabled},
+                 #{employees.email},
+                 #{employees.department.departmentId}
+                 )
+             </foreach >
+      </insert >
+      
+      
+      <select id="pageCounts" parameterType="map" resultType="long">     
+	   select count(*) from oa_employee   
+	   <where>   
+	   	<if test="employeeName != null and employeeName != ''">  
+	       and employee_name like #{employeeName}                     
+	   </if>    
+	    <if test="gender != null and gender != ''">  
+	       and gender = #{gender}                      
+	   </if>               
+   	  </where>    
+	</select>  
+      
+      
+     <select id="pageList" parameterType="java.util.Map" resultMap="employeeRole">     
+       select ttt.* from(select tt.* from(select * from oa_employee  
+        <where>            
+           <if test="employeeName != null and employeeName != ''">  
+                 
+                 <!--  特别提醒一下， $只是字符串拼接， 所以要特别小心sql注入问题。  
+                  在开发时使用: $,方便调试sql,发布时使用: #  
+                 and name like #{name},   -->
+                
+               and employee_name like '%${employeeName}%'                     
+           </if>    
+            <if test="gender != null and gender != ''">  
+               and gender = #{gender}                      
+            </if>      
+         </where>    
+         order by ${orderName} ${descAsc} )tt) ttt
+         limit  
+           <if test="startIndex != null and startIndex != ''">  
+               ${startIndex},                     
+           </if>    
+            <if test="everyPage != null and everyPage != ''">                
+                ${everyPage}                               
+            </if>      
+	</select>
+	 
+</mapper>
