@@ -330,7 +330,8 @@ public class EmployeeService {
 		}
 		return null;
 	}
-
+	
+	//分页查询
 	public Long pageCounts(Map<String, Object> params) {
 		return dao.pageCounts(params);
 	}
